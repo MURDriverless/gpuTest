@@ -10,10 +10,14 @@
 #include <opencv2/cudaarithm.hpp>
 #include <opencv2/cudaimgproc.hpp>
 
-#define RUN_SIZE 10
+const unsigned long RUN_SIZE = 100;
+char INTERP_STR[][10] = {"Nearest", "Linear", "Cubic"};
+cv::InterpolationFlags INTERP_METHOD = cv::InterpolationFlags::INTER_LINEAR;
 
 int main(int argc, char** argv) {
-    std::cout << "Hello World" << std::endl;
+    std::cout << "Interp Method: " << INTERP_STR[INTERP_METHOD] << std::endl;
+    std::cout << "Num runs: " << RUN_SIZE << std::endl;
+    std::cout << std::endl;
 
     cv::Mat cameraMatrix, distCoeffs;
     cv::Size calibSize;
@@ -47,7 +51,7 @@ int main(int argc, char** argv) {
         auto then = std::chrono::high_resolution_clock::now();
 
         cv::cvtColor(testImage, testImageColor, cv::COLOR_BayerBG2BGR);
-        cv::remap(testImageColor, testImageColor_Undist, xmap, ymap, cv::InterpolationFlags::INTER_CUBIC);
+        cv::remap(testImageColor, testImageColor_Undist, xmap, ymap, INTERP_METHOD);
 
         auto now = std::chrono::high_resolution_clock::now();
         cpuMeanTime += std::chrono::duration_cast<std::chrono::milliseconds>(now - then).count();
@@ -61,7 +65,7 @@ int main(int argc, char** argv) {
 
         testImage_gpu.upload(testImage);
         cv::cuda::cvtColor(testImage_gpu, testImageColor_gpu, cv::COLOR_BayerBG2BGR);
-        cv::cuda::remap(testImageColor_gpu, testImageColor_Undist_gpu, xmap_gpu, ymap_gpu, cv::InterpolationFlags::INTER_CUBIC);
+        cv::cuda::remap(testImageColor_gpu, testImageColor_Undist_gpu, xmap_gpu, ymap_gpu, INTERP_METHOD);
         testImageColor_Undist_gpu.download(testImageColor_Undist);
 
         auto now = std::chrono::high_resolution_clock::now();
